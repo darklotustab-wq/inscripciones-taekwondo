@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Taekwondo</title>
+  <link rel="stylesheet" href="/shared.css" />
+  <style>
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 28px 22px; }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .admin-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+    .admin-meta {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    /* New event banner */
+    .new-event-banner {
+      background: linear-gradient(135deg, rgba(255, 214, 10, 0.12), rgba(255, 214, 10, 0.04));
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+    }
+    .new-event-banner h3 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .new-event-banner p {
+      color: var(--text);
+      font-size: 13px;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .copy-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      flex-wrap: wrap;
+    }
+    .copy-row label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      color: var(--text-dim);
+      min-width: 110px;
+    }
+    .copy-row code {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 1px;
+      flex: 1;
+      min-width: 200px;
+      word-break: break-all;
+    }
+    .copy-row button {
+      padding: 6px 12px;
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+    .copy-row button:hover { color: var(--text); border-color: var(--text-dim); }
+    .banner-warn {
+      color: var(--warn);
+      font-size: 12px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 12px 22px;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content.hidden { display: none; }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .stat-box {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .stat-num.pending { color: var(--warn); }
+    .stat-num.confirmed { color: var(--success); }
+    .stat-num.rejected { color: var(--danger); }
+
+    /* Filtros */
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .filters input, .filters select { max-width: 280px; }
+
+    /* Lista de inscriptos */
+    .reg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .reg-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .reg-card.pending { border-left: 3px solid var(--warn); }
+    .reg-card.confirmed { border-left: 3px solid var(--success); }
+    .reg-card.rejected { border-left: 3px solid var(--danger); opacity: 0.6; }
+
+    .reg-photo {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      background: var(--bg-elev-2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-faint);
+      font-size: 24px;
+    }
+    .reg-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .reg-info { min-width: 0; }
+    .reg-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .reg-meta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.3px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .reg-meta span { white-space: nowrap; }
+    .reg-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .reg-actions button {
+      padding: 6px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+    .reg-actions button:hover { color: var(--text); }
+    .reg-actions .btn-confirm:hover { color: var(--success); border-color: var(--success); }
+    .reg-actions .btn-reject:hover { color: var(--danger); border-color: var(--danger); }
+    .reg-actions .btn-view:hover { color: var(--accent); border-color: var(--accent); }
+
+    .empty-list {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+    }
+
+    /* Modal de detalle */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .modal.hidden { display: none; }
+    .modal-bg {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    .modal-card {
+      position: relative;
+      width: 560px;
+      max-width: 100%;
+      max-height: 92vh;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-y: auto;
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-close {
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+    }
+    .modal-close:hover { background: var(--bg); color: var(--text); }
+    .modal-body { padding: 20px; }
+    .modal-photos {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .modal-photo {
+      width: 120px;
+      height: 120px;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-faint);
+      font-size: 36px;
+      border: 1px solid var(--border);
+    }
+    .modal-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-photo-small { width: 80px; height: 80px; }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+    .detail-value {
+      font-size: 13px;
+      text-align: right;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      flex-wrap: wrap;
+    }
+
+    /* Pestaña de evento (info + escuelas) */
+    .schools-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .school-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .school-row-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      background: var(--bg-elev-2);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .school-row-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .school-row-name { flex: 1; font-size: 13px; }
+    .school-row-remove {
+      color: var(--text-faint);
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .school-row-remove:hover { color: var(--danger); background: var(--bg-elev-2); }
+
+    .add-school-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+    @media (max-width: 540px) {
+      .add-school-row { grid-template-columns: 1fr; }
+    }
+
+    /* Acceso denegado */
+    .access-denied {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .access-denied h2 {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 4px;
+      color: var(--danger);
+      margin-bottom: 12px;
+    }
+
+    /* Categorías chip-style */
+    .categories-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .cat-chip {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      color: var(--text-dim);
+    }
+
+    /* Public link card */
+    .share-card {
+      background: linear-gradient(135deg, rgba(6, 214, 160, 0.10), rgba(6, 214, 160, 0.03));
+      border: 1px solid var(--success);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .share-card h3 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+
+    /* === FAQ list (tab Bot) === */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .faq-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      transition: border-color 0.15s;
+    }
+    .faq-item:focus-within {
+      border-color: var(--accent);
+    }
+    .faq-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .faq-emoji-input {
+      width: 50px;
+      text-align: center;
+      font-size: 18px;
+      padding: 8px 4px;
+    }
+    .faq-question-input {
+      flex: 1;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .faq-remove-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .faq-remove-btn:hover {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+    .faq-answer-input {
+      width: 100%;
+      min-height: 70px;
+      resize: vertical;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Carga / acceso denegado -->
+    <div id="loading" class="text-center" style="padding:60px 0;color:var(--text-dim);font-family:var(--font-mono);font-size:12px;letter-spacing:1.5px">
+      VERIFICANDO ACCESO...
+    </div>
+
+    <div id="denied" class="access-denied hidden">
+      <h2>ACCESO DENEGADO</h2>
+      <p class="text-muted">La clave de admin es incorrecta o el evento no existe.</p>
+      <a href="/" class="btn btn-secondary" style="margin-top:18px;display:inline-block">← VOLVER</a>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+      <!-- Banner de evento recién creado -->
+      <div class="new-event-banner hidden" id="newBanner">
+        <h3>🎉 EVENTO CREADO</h3>
+        <p>Guardá estos datos. Vas a necesitar el <strong>código</strong> para compartir el link de inscripción, y la <strong>clave de admin</strong> para gestionar el evento.</p>
+        <div class="copy-row">
+          <label>Link público</label>
+          <code id="copyLink">—</code>
+          <button data-copy="copyLink">COPIAR</button>
+        </div>
+        <div class="copy-row">
+          <label>Código</label>
+          <code id="copyCode">—</code>
+          <button data-copy="copyCode">COPIAR</button>
+        </div>
+        <div class="copy-row">
+          <label>Clave admin</label>
+          <code id="copyKey">—</code>
+          <button data-copy="copyKey">COPIAR</button>
+        </div>
+        <div class="copy-row">
+          <label>URL admin</label>
+          <code id="copyAdminUrl">—</code>
+          <button data-copy="copyAdminUrl">COPIAR</button>
+        </div>
+        <div class="banner-warn">
+          ⚠️ La clave admin <strong>no se puede recuperar</strong>. Guardala bien (capturá la pantalla o copiala a un lugar seguro).
+        </div>
+      </div>
+
+      <div class="admin-header">
+        <div>
+          <div class="admin-title" id="evtTitle">—</div>
+          <div class="admin-meta" id="evtMeta">—</div>
+        </div>
+        <div class="admin-actions">
+          <a class="btn btn-secondary" id="downloadBtn" target="_blank">📥 EXPORTAR JSON</a>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="regs">📋 INSCRIPCIONES</button>
+        <button class="tab" data-tab="event">⚙️ EVENTO</button>
+        <button class="tab" data-tab="schools">🏫 ESCUELAS</button>
+        <button class="tab" data-tab="bot">🤖 BOT</button>
+      </div>
+
+      <!-- TAB: Inscripciones -->
+      <div class="tab-content" id="tab-regs">
+        <div class="share-card">
+          <h3>LINK PARA COMPARTIR</h3>
+          <div class="copy-row">
+            <code id="shareLink">—</code>
+            <button data-copy="shareLink">COPIAR LINK</button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <div class="stat-num" id="statTotal">0</div>
+            <div class="stat-label">TOTAL</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num pending" id="statPending">0</div>
+            <div class="stat-label">PENDIENTES</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num confirmed" id="statConfirmed">0</div>
+            <div class="stat-label">CONFIRMADOS</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num rejected" id="statRejected">0</div>
+            <div class="stat-label">RECHAZADOS</div>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input type="text" id="filterText" placeholder="Buscar por nombre o escuela..." />
+          <select id="filterCategory">
+            <option value="">Todas las categorías</option>
+          </select>
+          <select id="filterStatus">
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendientes</option>
+            <option value="confirmed">Confirmados</option>
+            <option value="rejected">Rechazados</option>
+          </select>
+        </div>
+
+        <div class="reg-list" id="regList"></div>
+      </div>
+
+      <!-- TAB: Datos del evento -->
+      <div class="tab-content hidden" id="tab-event">
+        <div class="card">
+          <div class="card-title">DATOS DEL EVENTO</div>
+          <div class="form-row">
+            <label class="form-label">NOMBRE</label>
+            <input type="text" id="evtName" maxlength="120" />
+          </div>
+          <div class="form-row-2">
+            <div class="form-row">
+              <label class="form-label">FECHA</label>
+              <input type="date" id="evtDate" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">LUGAR</label>
+              <input type="text" id="evtLocation" maxlength="200" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">CATEGORÍAS</div>
+          <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px">
+            Una por línea. Los inscriptos elegirán una de esta lista.
+          </p>
+          <textarea id="evtCategories" rows="8" style="font-family:var(--font-mono);line-height:1.6"></textarea>
+        </div>
+
+        <p class="text-muted" style="font-size:12px;margin-bottom:14px">
+          ℹ️ Los datos del evento se guardan automáticamente cuando hacés cambios.
+        </p>
+      </div>
+
+      <!-- TAB: Escuelas -->
+      <div class="tab-content hidden" id="tab-schools">
+        <div class="card">
+          <div class="card-title">ESCUELAS PREDEFINIDAS</div>
+          <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px">
+            Estas aparecerán como sugerencia para los inscriptos. Si un competidor elige una de la lista,
+            se asocia automáticamente su escudo.
+          </p>
+
+          <div class="schools-list" id="schoolsList"></div>
+
+          <div class="add-school-row">
+            <input type="text" id="newSchoolName" placeholder="Nombre de la escuela" maxlength="100" />
+            <button class="btn btn-secondary" id="uploadLogoBtn">📷 ESCUDO</button>
+            <button class="btn btn-accent" id="addSchoolBtn">+ AGREGAR</button>
+          </div>
+          <input type="file" id="schoolLogoInput" accept="image/*" hidden />
+          <div id="logoPreview" class="hidden" style="margin-top:10px">
+            <img id="logoPreviewImg" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" />
+            <button class="btn btn-secondary" style="margin-left:8px;padding:6px 12px;font-size:11px" id="clearLogoBtn">✕ QUITAR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Bot -->
+      <div class="tab-content hidden" id="tab-bot">
+        <!-- Card con link público al bot -->
+        <div class="share-card" style="background:linear-gradient(135deg,rgba(44,123,229,.12),rgba(44,123,229,.03));border-color:var(--chong)">
+          <h3 style="color:var(--chong)">🤖 LINK DEL BOT PARA COMPARTIR</h3>
+          <div class="copy-row">
+            <code id="botLink">—</code>
+            <button data-copy="botLink">COPIAR LINK</button>
+          </div>
+          <p style="color:var(--text-dim);font-size:12px;margin-top:8px;line-height:1.5">
+            Mandalo por WhatsApp, Instagram, donde quieras. La gente lo abre y el bot responde sus preguntas.
+          </p>
+        </div>
+
+        <!-- Configuración general del bot -->
+        <div class="card">
+          <div class="card-title">CONFIGURACIÓN GENERAL</div>
+
+          <div class="form-row">
+            <label class="form-label">MENSAJE DE BIENVENIDA</label>
+            <textarea id="botWelcome" rows="3" maxlength="500" placeholder="¡Hola! 👋 Soy el bot del torneo. Tocá una pregunta para ver la respuesta:"></textarea>
+            <div class="form-hint">Es el primer mensaje que ve el usuario al entrar.</div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">WHATSAPP PARA "HABLAR CON UN HUMANO" (opcional)</label>
+            <input type="tel" id="botWhatsapp" maxlength="20" placeholder="5491112345678" />
+            <div class="form-hint">
+              Número con código de país, sin +, sin espacios, sin guiones. Ej: 5491112345678<br>
+              Si lo dejás vacío, no aparece el botón.
+            </div>
+          </div>
+        </div>
+
+        <!-- Preguntas y respuestas -->
+        <div class="card">
+          <div class="card-title">PREGUNTAS FRECUENTES</div>
+          <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px;line-height:1.5">
+            Cada item se convierte en un botón que el usuario puede tocar.<br>
+            Podés usar estos atajos en las respuestas: <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px">{fecha}</code> <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px">{lugar}</code> <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px">{evento}</code> <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px">{categorias}</code> — se reemplazan automáticamente.
+          </p>
+
+          <div id="faqList" class="faq-list"></div>
+
+          <button class="btn btn-accent btn-block" id="addFaqBtn" style="margin-top:14px">+ AGREGAR PREGUNTA</button>
+
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-secondary" id="resetFaqsBtn">⟲ RESTAURAR PLANTILLA POR DEFECTO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de detalle de inscripto -->
+    <div class="modal hidden" id="regModal">
+      <div class="modal-bg" id="regModalBg"></div>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modalTitle" style="font-family:var(--font-display);font-size:22px;letter-spacing:2px">—</h3>
+          <button class="modal-close" id="modalCloseBtn">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    const code = location.pathname.split('/').pop().toUpperCase();
+    const params = new URLSearchParams(location.search);
+    const adminKey = params.get('key');
+    const isNew = params.get('new') === '1';
+
+    let data = null;  // datos del evento completo
+    let pendingLogo = null;  // logo en upload (escuelas)
+
+    // Init
+    if (!adminKey) {
+      showDenied();
+    } else {
+      loadData();
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch(`/api/admin/${code}?key=${encodeURIComponent(adminKey)}`);
+        if (!res.ok) {
+          if (res.status === 403) showDenied();
+          else showDenied();
+          return;
+        }
+        data = await res.json();
+        renderAll();
+        $('#loading').classList.add('hidden');
+        $('#dashboard').classList.remove('hidden');
+        if (isNew) showNewBanner();
+      } catch (e) {
+        showDenied();
+      }
+    }
+
+    function showDenied() {
+      $('#loading').classList.add('hidden');
+      $('#denied').classList.remove('hidden');
+    }
+
+    function showNewBanner() {
+      const baseUrl = location.origin;
+      $('#copyLink').textContent = `${baseUrl}/e/${data.code}`;
+      $('#copyCode').textContent = data.code;
+      $('#copyKey').textContent = data.adminKey;
+      $('#copyAdminUrl').textContent = `${baseUrl}/admin/${data.code}?key=${data.adminKey}`;
+      $('#newBanner').classList.remove('hidden');
+    }
+
+    function renderAll() {
+      // Header
+      $('#evtTitle').textContent = data.event.name;
+      const metaParts = [];
+      if (data.event.date) metaParts.push(data.event.date);
+      if (data.event.location) metaParts.push(data.event.location);
+      metaParts.push(`Código: ${data.code}`);
+      $('#evtMeta').textContent = metaParts.join(' · ');
+
+      // Download link
+      $('#downloadBtn').href = `/api/admin/${data.code}/export?key=${encodeURIComponent(adminKey)}`;
+
+      // Share
+      $('#shareLink').textContent = `${location.origin}/e/${data.code}`;
+
+      // Event form
+      if (document.activeElement?.id !== 'evtName') $('#evtName').value = data.event.name || '';
+      if (document.activeElement?.id !== 'evtDate') $('#evtDate').value = data.event.date || '';
+      if (document.activeElement?.id !== 'evtLocation') $('#evtLocation').value = data.event.location || '';
+      if (document.activeElement?.id !== 'evtCategories') $('#evtCategories').value = data.categories.join('\n');
+
+      // Filter category options
+      const filterCat = $('#filterCategory');
+      filterCat.innerHTML = '<option value="">Todas las categorías</option>';
+      for (const c of data.categories) {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        filterCat.appendChild(opt);
+      }
+
+      // Stats
+      const counts = { total: data.registrations.length, pending: 0, confirmed: 0, rejected: 0 };
+      for (const r of data.registrations) counts[r.status] = (counts[r.status] || 0) + 1;
+      $('#statTotal').textContent = counts.total;
+      $('#statPending').textContent = counts.pending;
+      $('#statConfirmed').textContent = counts.confirmed;
+      $('#statRejected').textContent = counts.rejected;
+
+      renderRegs();
+      renderSchools();
+      renderBot();
+    }
+
+    function renderRegs() {
+      const list = $('#regList');
+      list.innerHTML = '';
+      const q = $('#filterText').value.trim().toLowerCase();
+      const cat = $('#filterCategory').value;
+      const status = $('#filterStatus').value;
+      const filtered = data.registrations.filter((r) => {
+        if (cat && r.category !== cat) return false;
+        if (status && r.status !== status) return false;
+        if (q && !r.name.toLowerCase().includes(q) && !r.school.toLowerCase().includes(q)) return false;
+        return true;
+      });
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty-list">${data.registrations.length === 0 ? 'AÚN NO HAY INSCRIPCIONES' : 'NO COINCIDE NINGUNA CON LOS FILTROS'}</div>`;
+        return;
+      }
+      for (const r of filtered) {
+        const photoHtml = r.photo ? `<img src="${r.photo}" alt="" />` : '👤';
+        const card = document.createElement('div');
+        card.className = `reg-card ${r.status}`;
+        card.innerHTML = `
+          <div class="reg-photo">${photoHtml}</div>
+          <div class="reg-info">
+            <div class="reg-name">${esc(r.name)}</div>
+            <div class="reg-meta">
+              <span>📂 ${esc(r.category)}</span>
+              ${r.school ? `<span>🏫 ${esc(r.school)}</span>` : ''}
+              ${r.weight ? `<span>⚖️ ${esc(r.weight)} kg</span>` : ''}
+              ${r.beltLevel ? `<span>🥋 ${esc(r.beltLevel)}</span>` : ''}
+            </div>
+          </div>
+          <div class="reg-actions">
+            <button class="btn-view" data-action="view" data-id="${r.id}">VER</button>
+            ${r.status !== 'confirmed' ? `<button class="btn-confirm" data-action="confirm" data-id="${r.id}">✓</button>` : ''}
+            ${r.status !== 'rejected' ? `<button class="btn-reject" data-action="reject" data-id="${r.id}">✕</button>` : ''}
+          </div>
+        `;
+        list.appendChild(card);
+      }
+    }
+
+    function renderSchools() {
+      const list = $('#schoolsList');
+      list.innerHTML = '';
+      if (data.schools.length === 0) {
+        list.innerHTML = '<div class="empty-list">SIN ESCUELAS PREDEFINIDAS</div>';
+        return;
+      }
+      for (const s of data.schools) {
+        const logoHtml = s.logo
+          ? `<img src="/api/events/${data.code}/schools/${encodeURIComponent(s.name)}/logo" alt="" />`
+          : '🏫';
+        const row = document.createElement('div');
+        row.className = 'school-row';
+        row.innerHTML = `
+          <div class="school-row-logo">${logoHtml}</div>
+          <div class="school-row-name">${esc(s.name)}</div>
+          <button class="school-row-remove" data-school-remove="${esc(s.name)}">✕ ELIMINAR</button>
+        `;
+        list.appendChild(row);
+      }
+    }
+
+    // Acciones sobre las inscripciones
+    document.addEventListener('click', async (e) => {
+      const target = e.target.closest('[data-action]');
+      if (target) {
+        const id = target.dataset.id;
+        const action = target.dataset.action;
+        if (action === 'view') return openRegModal(id);
+        if (action === 'confirm') return changeStatus(id, 'confirmed');
+        if (action === 'reject') return changeStatus(id, 'rejected');
+      }
+      const rmTarget = e.target.closest('[data-school-remove]');
+      if (rmTarget) {
+        const name = rmTarget.dataset.schoolRemove;
+        if (confirm(`¿Eliminar la escuela "${name}"?`)) removeSchool(name);
+      }
+      // Copy buttons
+      const copyTarget = e.target.closest('[data-copy]');
+      if (copyTarget) {
+        const text = $(`#${copyTarget.dataset.copy}`).textContent;
+        navigator.clipboard.writeText(text).then(() => toast('Copiado ✓', 'success'));
+      }
+    });
+
+    async function changeStatus(id, status) {
+      try {
+        const res = await fetch(`/api/admin/${code}/registrations/${id}?key=${encodeURIComponent(adminKey)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) throw new Error('Error');
+        // Actualizar local
+        const reg = data.registrations.find((r) => r.id === id);
+        if (reg) reg.status = status;
+        renderAll();
+        toast(`Inscripción ${status === 'confirmed' ? 'confirmada' : 'rechazada'}`, 'success');
+      } catch (e) {
+        toast('Error al actualizar', 'error');
+      }
+    }
+
+    async function deleteReg(id) {
+      try {
+        const res = await fetch(`/api/admin/${code}/registrations/${id}?key=${encodeURIComponent(adminKey)}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        data.registrations = data.registrations.filter((r) => r.id !== id);
+        renderAll();
+        closeRegModal();
+        toast('Inscripción eliminada', 'success');
+      } catch (e) {
+        toast('Error al eliminar', 'error');
+      }
+    }
+
+    function openRegModal(id) {
+      const r = data.registrations.find((x) => x.id === id);
+      if (!r) return;
+      $('#modalTitle').textContent = r.name;
+      $('#modalBody').innerHTML = `
+        <div class="modal-photos">
+          <div class="modal-photo">${r.photo ? `<img src="${r.photo}">` : '👤'}</div>
+          <div class="modal-photo modal-photo-small">${r.schoolLogo ? `<img src="${r.schoolLogo}">` : '🏫'}</div>
+        </div>
+        <div class="detail-row"><span class="detail-label">CATEGORÍA</span><span class="detail-value">${esc(r.category)}</span></div>
+        ${r.school ? `<div class="detail-row"><span class="detail-label">ESCUELA</span><span class="detail-value">${esc(r.school)}</span></div>` : ''}
+        ${r.beltLevel ? `<div class="detail-row"><span class="detail-label">CINTURÓN</span><span class="detail-value">${esc(r.beltLevel)}</span></div>` : ''}
+        ${r.weight ? `<div class="detail-row"><span class="detail-label">PESO</span><span class="detail-value">${esc(r.weight)} kg</span></div>` : ''}
+        ${r.birthdate ? `<div class="detail-row"><span class="detail-label">NACIMIENTO</span><span class="detail-value">${esc(r.birthdate)}</span></div>` : ''}
+        ${r.phone ? `<div class="detail-row"><span class="detail-label">TELÉFONO</span><span class="detail-value">${esc(r.phone)}</span></div>` : ''}
+        ${r.email ? `<div class="detail-row"><span class="detail-label">EMAIL</span><span class="detail-value">${esc(r.email)}</span></div>` : ''}
+        <div class="detail-row"><span class="detail-label">ESTADO</span><span class="detail-value">${esc(r.status)}</span></div>
+        <div class="detail-row"><span class="detail-label">INSCRIPTO</span><span class="detail-value">${new Date(r.createdAt).toLocaleString('es-ES')}</span></div>
+      `;
+      $('#modalFooter').innerHTML = `
+        <button class="btn btn-danger" id="delBtn">🗑 ELIMINAR</button>
+        ${r.status !== 'confirmed' ? '<button class="btn btn-primary" id="confBtn">✓ CONFIRMAR</button>' : ''}
+        ${r.status !== 'rejected' ? '<button class="btn btn-secondary" id="rejBtn">✕ RECHAZAR</button>' : ''}
+      `;
+      $('#delBtn')?.addEventListener('click', () => {
+        if (confirm(`¿Eliminar la inscripción de "${r.name}"?`)) deleteReg(r.id);
+      });
+      $('#confBtn')?.addEventListener('click', () => { changeStatus(r.id, 'confirmed'); closeRegModal(); });
+      $('#rejBtn')?.addEventListener('click', () => { changeStatus(r.id, 'rejected'); closeRegModal(); });
+      $('#regModal').classList.remove('hidden');
+    }
+
+    function closeRegModal() { $('#regModal').classList.add('hidden'); }
+    $('#modalCloseBtn').addEventListener('click', closeRegModal);
+    $('#regModalBg').addEventListener('click', closeRegModal);
+
+    // Tabs
+    $$('.tab').forEach((t) => {
+      t.addEventListener('click', () => {
+        $$('.tab').forEach((x) => x.classList.toggle('active', x === t));
+        $$('.tab-content').forEach((c) => c.classList.toggle('hidden', c.id !== `tab-${t.dataset.tab}`));
+      });
+    });
+
+    // Filtros
+    $('#filterText').addEventListener('input', renderRegs);
+    $('#filterCategory').addEventListener('change', renderRegs);
+    $('#filterStatus').addEventListener('change', renderRegs);
+
+    // Edición del evento - autosave
+    let saveTimer;
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveEvent, 600);
+    }
+    ['evtName', 'evtDate', 'evtLocation', 'evtCategories'].forEach((id) => {
+      $(`#${id}`).addEventListener('input', scheduleSave);
+    });
+
+    async function saveEvent() {
+      try {
+        const payload = {
+          name: $('#evtName').value.trim(),
+          date: $('#evtDate').value,
+          location: $('#evtLocation').value.trim(),
+          categories: $('#evtCategories').value.split('\n').map((c) => c.trim()).filter(Boolean),
+        };
+        const res = await fetch(`/api/admin/${code}?key=${encodeURIComponent(adminKey)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error();
+        // Actualizar local
+        data.event.name = payload.name;
+        data.event.date = payload.date;
+        data.event.location = payload.location;
+        if (payload.categories.length > 0) data.categories = payload.categories;
+        // Re-render solo header y filtros (no inputs para no pisar al usuario)
+        $('#evtTitle').textContent = data.event.name;
+        const metaParts = [];
+        if (data.event.date) metaParts.push(data.event.date);
+        if (data.event.location) metaParts.push(data.event.location);
+        metaParts.push(`Código: ${data.code}`);
+        $('#evtMeta').textContent = metaParts.join(' · ');
+        const filterCat = $('#filterCategory');
+        const prev = filterCat.value;
+        filterCat.innerHTML = '<option value="">Todas las categorías</option>';
+        for (const c of data.categories) {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          if (c === prev) opt.selected = true;
+          filterCat.appendChild(opt);
+        }
+        toast('💾 Guardado', 'success');
+      } catch (e) {
+        toast('Error al guardar', 'error');
+      }
+    }
+
+    // === ESCUELAS ===
+    $('#uploadLogoBtn').addEventListener('click', () => $('#schoolLogoInput').click());
+    $('#schoolLogoInput').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        pendingLogo = await resizeImage(ev.target.result, 400);
+        $('#logoPreviewImg').src = pendingLogo;
+        $('#logoPreview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+    $('#clearLogoBtn').addEventListener('click', () => {
+      pendingLogo = null;
+      $('#schoolLogoInput').value = '';
+      $('#logoPreview').classList.add('hidden');
+    });
+
+    $('#addSchoolBtn').addEventListener('click', async () => {
+      const name = $('#newSchoolName').value.trim();
+      if (!name) return toast('Falta el nombre de la escuela', 'error');
+      try {
+        const res = await fetch(`/api/admin/${code}/schools?key=${encodeURIComponent(adminKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, logo: pendingLogo }),
+        });
+        if (!res.ok) throw new Error();
+        await loadData();
+        $('#newSchoolName').value = '';
+        pendingLogo = null;
+        $('#logoPreview').classList.add('hidden');
+        $('#schoolLogoInput').value = '';
+        toast(`Escuela "${name}" agregada`, 'success');
+      } catch (e) {
+        toast('Error al agregar', 'error');
+      }
+    });
+
+    async function removeSchool(name) {
+      try {
+        const res = await fetch(`/api/admin/${code}/schools/${encodeURIComponent(name)}?key=${encodeURIComponent(adminKey)}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        await loadData();
+        toast(`Escuela eliminada`, 'success');
+      } catch (e) {
+        toast('Error al eliminar', 'error');
+      }
+    }
+
+    // === BOT (FAQs) ===
+    const DEFAULT_FAQS = {
+      welcome: '¡Hola! 👋 Soy el bot del torneo. Tocá una pregunta para ver la respuesta:',
+      whatsapp: '',
+      items: [
+        { id: 'q1', emoji: '📅', question: '¿Cuándo es el torneo?', answer: 'El torneo se realiza el {fecha}. Te esperamos!' },
+        { id: 'q2', emoji: '📍', question: '¿Dónde es?', answer: 'El torneo se realiza en {lugar}.' },
+        { id: 'q3', emoji: '📝', question: '¿Cómo me inscribo?', answer: 'Para inscribirte hacé click en el botón "Inscribirme" 👇 o vení al sitio oficial del torneo.\n\nNecesitás:\n- Foto del competidor\n- Logo o nombre de tu escuela\n- Datos personales básicos' },
+        { id: 'q4', emoji: '💰', question: '¿Cuánto cuesta la inscripción?', answer: 'El valor de la inscripción es $XXXX por categoría. Si competís en más de una, consultá descuentos.' },
+        { id: 'q5', emoji: '🥋', question: '¿Qué categorías hay?', answer: 'Las categorías disponibles son:\n{categorias}\n\nPodés inscribirte en más de una.' },
+        { id: 'q6', emoji: '⏰', question: '¿Hasta cuándo me puedo inscribir?', answer: 'Las inscripciones cierran el día anterior al torneo. Tratá de hacerlo con anticipación para asegurar tu cupo.' },
+        { id: 'q7', emoji: '👕', question: '¿Qué tengo que llevar?', answer: '- Dobok (uniforme) limpio\n- Protectores reglamentarios\n- Documento de identidad\n- Botella de agua\n- Comprobante de inscripción' },
+        { id: 'q8', emoji: '🅿️', question: '¿Hay estacionamiento?', answer: 'En el lugar del torneo hay estacionamiento. Te recomendamos llegar con tiempo.' },
+        { id: 'q9', emoji: '🏥', question: '¿Necesito seguro médico?', answer: 'Sí, es obligatorio contar con cobertura médica vigente. Verificá que tu obra social o prepaga esté al día antes del torneo.' },
+        { id: 'q10', emoji: '🎖️', question: '¿Hay premios?', answer: 'Sí! Habrá medallas para el 1°, 2° y 3° lugar de cada categoría. También trofeos especiales para mejor escuela y mejor competidor.' },
+      ],
+    };
+
+    function renderBot() {
+      // Link público del bot
+      $('#botLink').textContent = `${location.origin}/bot/${data.code}`;
+
+      // Cargar valores actuales en los inputs
+      const f = data.faqs || DEFAULT_FAQS;
+      if (document.activeElement?.id !== 'botWelcome') $('#botWelcome').value = f.welcome || '';
+      if (document.activeElement?.id !== 'botWhatsapp') $('#botWhatsapp').value = f.whatsapp || '';
+
+      // Lista de FAQs
+      const list = $('#faqList');
+      list.innerHTML = '';
+      const items = f.items || [];
+      if (items.length === 0) {
+        list.innerHTML = '<div class="empty-list">SIN PREGUNTAS · AGREGÁ LA PRIMERA</div>';
+        return;
+      }
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const row = document.createElement('div');
+        row.className = 'faq-item';
+        row.innerHTML = `
+          <div class="faq-item-header">
+            <input type="text" class="faq-emoji-input" maxlength="4" data-faq-field="emoji" data-faq-i="${i}" value="${esc(item.emoji || '')}" />
+            <input type="text" class="faq-question-input" maxlength="150" data-faq-field="question" data-faq-i="${i}" value="${esc(item.question || '')}" placeholder="¿Pregunta?" />
+            <button class="faq-remove-btn" data-faq-remove="${i}" title="Eliminar">✕</button>
+          </div>
+          <textarea class="faq-answer-input" maxlength="2000" data-faq-field="answer" data-faq-i="${i}" placeholder="Respuesta...">${esc(item.answer || '')}</textarea>
+        `;
+        list.appendChild(row);
+      }
+    }
+
+    // Recolectar FAQs actuales desde el DOM
+    function collectFaqs() {
+      const items = [];
+      const groups = $$('.faq-item');
+      groups.forEach((g, i) => {
+        const emoji = g.querySelector('[data-faq-field="emoji"]').value.trim();
+        const question = g.querySelector('[data-faq-field="question"]').value.trim();
+        const answer = g.querySelector('[data-faq-field="answer"]').value.trim();
+        if (question && answer) {
+          items.push({
+            id: data.faqs?.items?.[i]?.id || ('q' + Math.random().toString(36).slice(2, 8)),
+            emoji, question, answer,
+          });
+        }
+      });
+      return {
+        welcome: $('#botWelcome').value.trim(),
+        whatsapp: $('#botWhatsapp').value.replace(/[^0-9]/g, ''),
+        items,
+      };
+    }
+
+    let botSaveTimer;
+    function scheduleBotSave() {
+      clearTimeout(botSaveTimer);
+      botSaveTimer = setTimeout(saveBot, 800);
+    }
+
+    async function saveBot() {
+      try {
+        const faqs = collectFaqs();
+        const res = await fetch(`/api/admin/${code}?key=${encodeURIComponent(adminKey)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ faqs }),
+        });
+        if (!res.ok) throw new Error();
+        data.faqs = faqs;
+        toast('🤖 Bot guardado', 'success');
+      } catch (e) {
+        toast('Error al guardar bot', 'error');
+      }
+    }
+
+    // Listeners del tab bot
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'botWelcome' || e.target.id === 'botWhatsapp') {
+        scheduleBotSave();
+      }
+      if (e.target.dataset.faqField) {
+        scheduleBotSave();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const rmIdx = e.target.dataset.faqRemove;
+      if (rmIdx !== undefined) {
+        // Eliminar item localmente y re-renderizar
+        const faqs = collectFaqs();
+        faqs.items.splice(Number(rmIdx), 1);
+        data.faqs = faqs;
+        renderBot();
+        saveBot();
+      }
+    });
+    $('#addFaqBtn').addEventListener('click', () => {
+      const faqs = collectFaqs();
+      faqs.items.push({
+        id: 'q' + Math.random().toString(36).slice(2, 8),
+        emoji: '❓',
+        question: '',
+        answer: '',
+      });
+      data.faqs = faqs;
+      renderBot();
+      // foco al question del nuevo
+      setTimeout(() => {
+        const inputs = $$('.faq-question-input');
+        inputs[inputs.length - 1]?.focus();
+      }, 50);
+    });
+    $('#resetFaqsBtn').addEventListener('click', () => {
+      if (!confirm('¿Restaurar la plantilla por defecto? Vas a perder los cambios actuales.')) return;
+      data.faqs = JSON.parse(JSON.stringify(DEFAULT_FAQS));
+      renderBot();
+      saveBot();
+    });
+
+    // === Helpers ===
+    function resizeImage(dataUrl, maxSide) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (Math.max(width, height) > maxSide) {
+            const scale = maxSide / Math.max(width, height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = dataUrl;
+      });
+    }
+
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    let toastTimer;
+    function toast(msg, kind = '') {
+      const t = $('#toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + kind;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // Auto-refresh cada 30s para ver nuevas inscripciones
+    setInterval(() => {
+      if ($('#dashboard').classList.contains('hidden')) return;
+      loadData();
+    }, 30000);
+  </script>
+</body>
+</html>

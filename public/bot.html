@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Bot · Taekwondo</title>
+  <link rel="stylesheet" href="/shared.css" />
+  <style>
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    /* Cuando está embebido en iframe, no centrar ni limitar ancho */
+    body.embedded { min-height: 100%; }
+    body.embedded .chat-wrap {
+      max-width: none;
+      border-left: none;
+      border-right: none;
+      min-height: 100%;
+    }
+    .chat-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .chat-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--hong) 0%, var(--hong) 50%, var(--chong) 50%, var(--chong) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+      border: 2px solid var(--accent);
+    }
+    .chat-info { flex: 1; min-width: 0; }
+    .chat-name {
+      font-family: var(--font-display);
+      font-size: 18px; letter-spacing: 2px;
+      line-height: 1.1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-status {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: 1.5px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+    .chat-status .dot {
+      width: 8px; height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: dotPulse 2s ease infinite;
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .messages {
+      flex: 1;
+      padding: 20px 16px;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 10px;
+      background:
+        radial-gradient(ellipse at top, rgba(230, 57, 70, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, rgba(44, 123, 229, 0.04) 0%, transparent 50%),
+        var(--bg);
+    }
+    .msg {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px; line-height: 1.45;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      animation: msgIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg-bot {
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg-user {
+      background: linear-gradient(135deg, var(--chong), #1a5fb5);
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      color: #fff;
+    }
+    .msg a { color: var(--accent); text-decoration: underline; }
+    .msg-user a { color: #fff; }
+    .typing { display: inline-flex; gap: 4px; padding: 6px 0; }
+    .typing span {
+      width: 7px; height: 7px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: typingDot 1.2s ease infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+    .options {
+      padding: 12px 16px 18px;
+      display: flex; flex-direction: column;
+      gap: 8px;
+      background: var(--bg-elev);
+      border-top: 1px solid var(--border);
+      position: sticky;
+      bottom: 0;
+    }
+    .option-btn {
+      display: flex; align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .option-btn:hover, .option-btn:active {
+      background: var(--bg-elev-2);
+      border-color: var(--accent);
+      transform: translateX(2px);
+    }
+    .option-emoji { font-size: 18px; flex-shrink: 0; }
+    .option-text { flex: 1; line-height: 1.3; }
+    .option-btn.special-register {
+      background: linear-gradient(135deg, var(--success), #048a6c);
+      border-color: var(--success);
+      color: #fff; font-weight: 600;
+    }
+    .option-btn.special-register:hover { filter: brightness(1.1); }
+    .option-btn.special-whatsapp {
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      border-color: #25d366;
+      color: #fff; font-weight: 600;
+    }
+    .option-btn.special-whatsapp:hover { filter: brightness(1.1); }
+    .chat-footer {
+      padding: 10px 16px;
+      text-align: center;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+    .back-to-menu {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 1.5px;
+      color: var(--text-dim);
+      transition: all 0.15s;
+    }
+    .back-to-menu:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .err-screen {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .err-screen .err-icon { font-size: 48px; margin-bottom: 14px; }
+    .err-screen h2 {
+      font-family: var(--font-display);
+      letter-spacing: 3px;
+      font-size: 22px;
+      color: var(--danger);
+      margin-bottom: 8px;
+    }
+    .err-screen p { color: var(--text-dim); font-size: 14px; }
+    .loading-screen {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 12px; letter-spacing: 1.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-wrap" id="chatWrap">
+    <div class="loading-screen" id="loading">CARGANDO...</div>
+  </div>
+
+  <script>
+    const $ = (s, root = document) => root.querySelector(s);
+
+    const code = location.pathname.split('/').pop().toUpperCase();
+    let event = null;
+    let faqs = null;
+
+    // Detectar si está embebido en iframe (modal)
+    if (window.self !== window.top) {
+      document.body.classList.add('embedded');
+    }
+
+    init();
+
+    async function init() {
+      try {
+        const res = await fetch(`/api/events/${code}`);
+        if (!res.ok) return showError('Evento no encontrado');
+        const data = await res.json();
+        event = data;
+        faqs = data.faqs || { welcome: '¡Hola! Tocá una pregunta:', whatsapp: '', items: [] };
+        document.title = `Bot · ${data.event.name}`;
+        renderChat();
+      } catch (e) {
+        showError('Error de conexión');
+      }
+    }
+
+    function showError(msg) {
+      $('#chatWrap').innerHTML = `
+        <div class="err-screen">
+          <div class="err-icon">🚫</div>
+          <h2>${msg}</h2>
+          <p>Verificá el código del evento.</p>
+        </div>`;
+    }
+
+    function renderChat() {
+      $('#chatWrap').innerHTML = `
+        <div class="chat-header">
+          <div class="chat-avatar">🥋</div>
+          <div class="chat-info">
+            <div class="chat-name">${esc(event.event.name)}</div>
+            <div class="chat-status"><span class="dot"></span>EN LÍNEA · BOT</div>
+          </div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="options" id="options"></div>
+        <div class="chat-footer" id="footer"></div>`;
+      showWelcome();
+    }
+
+    async function showWelcome() {
+      const msgs = $('#messages');
+      msgs.innerHTML = '';
+      await typeBot(faqs.welcome);
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const opts = $('#options');
+      opts.innerHTML = '';
+      for (const item of faqs.items) {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-emoji">${item.emoji || '❓'}</span><span class="option-text">${esc(item.question)}</span>`;
+        btn.addEventListener('click', () => answerQuestion(item));
+        opts.appendChild(btn);
+      }
+      const regBtn = document.createElement('button');
+      regBtn.className = 'option-btn special-register';
+      regBtn.innerHTML = `<span class="option-emoji">📝</span><span class="option-text">Quiero inscribirme</span>`;
+      regBtn.addEventListener('click', () => {
+        // Si está embebido en iframe, avisar al padre para cerrar el modal
+        if (window.self !== window.top) {
+          window.parent.postMessage({ type: 'bot:close-and-register' }, '*');
+        } else {
+          location.href = `/e/${event.code}`;
+        }
+      });
+      opts.appendChild(regBtn);
+
+      if (faqs.whatsapp) {
+        const waBtn = document.createElement('button');
+        waBtn.className = 'option-btn special-whatsapp';
+        const waMsg = encodeURIComponent(`Hola! Quiero hablar sobre el torneo "${event.event.name}"`);
+        waBtn.innerHTML = `<span class="option-emoji">💬</span><span class="option-text">Hablar con un humano</span>`;
+        waBtn.addEventListener('click', () => {
+          window.open(`https://wa.me/${faqs.whatsapp}?text=${waMsg}`, '_blank');
+        });
+        opts.appendChild(waBtn);
+      }
+      $('#footer').innerHTML = '';
+    }
+
+    async function answerQuestion(item) {
+      addUserMsg(`${item.emoji || ''} ${item.question}`);
+      $('#options').innerHTML = '';
+      await typeBot(item.answer);
+      $('#footer').innerHTML = '';
+      const back = document.createElement('button');
+      back.className = 'back-to-menu';
+      back.innerHTML = '← VOLVER AL MENÚ';
+      back.addEventListener('click', () => renderMenu());
+      $('#footer').appendChild(back);
+    }
+
+    function addBotMsg(text) {
+      const msg = document.createElement('div');
+      msg.className = 'msg msg-bot';
+      msg.innerHTML = linkify(esc(text));
+      $('#messages').appendChild(msg);
+      scrollDown();
+    }
+    function addUserMsg(text) {
+      const msg = document.createElement('div');
+      msg.className = 'msg msg-user';
+      msg.textContent = text;
+      $('#messages').appendChild(msg);
+      scrollDown();
+    }
+    function addTyping() {
+      const t = document.createElement('div');
+      t.className = 'msg msg-bot';
+      t.id = '_typing';
+      t.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+      $('#messages').appendChild(t);
+      scrollDown();
+    }
+    function removeTyping() {
+      const t = $('#_typing');
+      if (t) t.remove();
+    }
+    async function typeBot(text) {
+      addTyping();
+      const wait = Math.min(1400, Math.max(600, text.length * 12));
+      await sleep(wait);
+      removeTyping();
+      addBotMsg(text);
+    }
+    function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+    function scrollDown() {
+      const m = $('#messages');
+      m.scrollTop = m.scrollHeight;
+    }
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function linkify(text) {
+      return text.replace(/(https?:\/\/[^\s]+)/g, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+    }
+  </script>
+</body>
+</html>

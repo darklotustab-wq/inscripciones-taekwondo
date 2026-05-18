@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscripción · Taekwondo</title>
+  <link rel="stylesheet" href="/shared.css" />
+  <style>
+    .event-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .event-name {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 3px;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .event-meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+    }
+    .event-code {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 14px;
+      letter-spacing: 2px;
+    }
+
+    /* Upload boxes para foto y escudo */
+    .uploads {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 540px) {
+      .uploads { grid-template-columns: 1fr 1fr; }
+    }
+    .upload-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .upload-preview {
+      aspect-ratio: 1;
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .upload-preview:hover { border-color: var(--accent); background: var(--bg-elev-2); }
+    .upload-preview.has-image { border-style: solid; padding: 0; }
+    .upload-preview.dragover { border-color: var(--accent); background: rgba(255, 214, 10, 0.08); }
+    .upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .upload-placeholder {
+      text-align: center;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      padding: 12px;
+    }
+    .upload-icon { font-size: 32px; margin-bottom: 6px; opacity: 0.5; }
+    .upload-hint { font-size: 9px; margin-top: 4px; }
+    .upload-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: 6px;
+    }
+    .upload-clear {
+      display: block;
+      width: 100%;
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      text-align: center;
+      padding: 4px;
+    }
+    .upload-clear:hover { color: var(--danger); }
+
+    /* Selector de escuela: input texto con autocompletado */
+    .school-block {
+      position: relative;
+    }
+    .school-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 4px;
+      z-index: 10;
+      display: none;
+    }
+    .school-suggestions.show { display: block; }
+    .school-sugg-item {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+    .school-sugg-item:last-child { border-bottom: none; }
+    .school-sugg-item:hover { background: var(--bg); }
+    .school-sugg-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: var(--bg);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--text-faint);
+    }
+    .school-sugg-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .submit-row {
+      margin-top: 24px;
+    }
+
+    /* Pantalla de éxito */
+    .success-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .success-screen .check {
+      font-size: 80px;
+      margin-bottom: 18px;
+      animation: checkPop 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes checkPop {
+      from { transform: scale(0.3); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-screen h2 {
+      font-family: var(--font-display);
+      font-size: 36px;
+      letter-spacing: 4px;
+      color: var(--success);
+      margin-bottom: 10px;
+    }
+    .success-screen p {
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+    .reg-id {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--bg-elev-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-title">TAEKWONDO</div>
+        <div class="brand-sub">INSCRIPCIÓN</div>
+      </div>
+    </div>
+
+    <!-- Carga inicial -->
+    <div id="loading" class="text-center" style="padding:60px 0;color:var(--text-dim);font-family:var(--font-mono);font-size:12px;letter-spacing:1.5px">
+      CARGANDO EVENTO...
+    </div>
+
+    <!-- Error -->
+    <div id="errorBox" class="card hidden text-center" style="border-color:var(--danger)">
+      <h2 style="color:var(--danger);font-family:var(--font-display);font-size:24px;letter-spacing:3px;margin-bottom:8px">EVENTO NO ENCONTRADO</h2>
+      <p style="color:var(--text-dim)">Verificá el código y volvé a intentar.</p>
+      <a href="/" class="btn btn-secondary" style="margin-top:14px;display:inline-block">← VOLVER</a>
+    </div>
+
+    <!-- Formulario -->
+    <div id="formContainer" class="hidden">
+      <div class="event-header">
+        <div class="event-code" id="eventCode">—</div>
+        <div class="event-name" id="eventName">—</div>
+        <div class="event-meta" id="eventMeta"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">FOTOS</div>
+        <div class="uploads">
+          <div class="upload-box">
+            <div class="upload-preview" id="photoPreview" data-kind="photo">
+              <div class="upload-placeholder">
+                <div class="upload-icon">👤</div>
+                <div>FOTO DEL COMPETIDOR</div>
+                <div class="upload-hint">Click o arrastrá</div>
+              </div>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" hidden />
+            <div class="upload-label">FOTO</div>
+            <button type="button" class="upload-clear hidden" data-clear="photo">✕ quitar</button>
+          </div>
+          <div class="upload-box">
+            <div class="upload-preview" id="logoPreview" data-kind="logo">
+              <div class="upload-placeholder">
+                <div class="upload-icon">🏫</div>
+                <div>ESCUDO ESCUELA</div>
+                <div class="upload-hint">Click o arrastrá</div>
+              </div>
+            </div>
+            <input type="file" id="logoInput" accept="image/*" hidden />
+            <div class="upload-label">ESCUDO</div>
+            <button type="button" class="upload-clear hidden" data-clear="logo">✕ quitar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">DATOS DEL COMPETIDOR</div>
+
+        <div class="form-row">
+          <label class="form-label">NOMBRE COMPLETO *</label>
+          <input type="text" id="fName" maxlength="80" placeholder="Juan Pérez" required />
+        </div>
+
+        <div class="form-row school-block">
+          <label class="form-label">ESCUELA / CLUB</label>
+          <input type="text" id="fSchool" maxlength="100" placeholder="Tigre Dojang" autocomplete="off" />
+          <div class="school-suggestions" id="schoolSugg"></div>
+          <div class="form-hint">Empezá a escribir para ver opciones disponibles</div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">CATEGORÍA *</label>
+          <select id="fCategory" required>
+            <option value="">— Elegir categoría —</option>
+          </select>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-row">
+            <label class="form-label">FECHA DE NACIMIENTO</label>
+            <input type="date" id="fBirthdate" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">PESO (KG)</label>
+            <input type="text" id="fWeight" maxlength="10" placeholder="65" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">CINTURÓN / NIVEL</label>
+          <input type="text" id="fBelt" maxlength="40" placeholder="Cinturón negro 1° dan" />
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-row">
+            <label class="form-label">TELÉFONO</label>
+            <input type="tel" id="fPhone" maxlength="40" placeholder="+54 11 1234-5678" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">EMAIL</label>
+            <input type="email" id="fEmail" maxlength="120" placeholder="email@ejemplo.com" />
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn btn-primary btn-block" id="submitBtn" style="font-size:16px;padding:16px">
+          ✓ INSCRIBIRME
+        </button>
+      </div>
+    </div>
+
+    <!-- Éxito -->
+    <div id="successScreen" class="success-screen hidden">
+      <div class="check">✓</div>
+      <h2>¡INSCRIPTO!</h2>
+      <p>Tu inscripción fue recibida.<br>El organizador la confirmará pronto.</p>
+      <div class="reg-id" id="successRegId">—</div>
+      <div>
+        <button class="btn btn-secondary" id="anotherBtn">INSCRIBIR OTRO COMPETIDOR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Widget flotante del bot: se carga al final cuando ya sabemos el código del evento -->
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    // Estado de la página
+    let event = null;
+    let schools = [];
+    const uploads = { photo: null, logo: null };
+
+    // Código viene del path (/e/ABC123)
+    const code = location.pathname.split('/').pop().toUpperCase();
+
+    async function init() {
+      try {
+        const res = await fetch(`/api/events/${code}`);
+        if (!res.ok) {
+          showError();
+          return;
+        }
+        const data = await res.json();
+        event = data;
+        schools = data.schools || [];
+        renderEvent();
+      } catch (e) {
+        showError();
+      }
+    }
+
+    function showError() {
+      $('#loading').classList.add('hidden');
+      $('#errorBox').classList.remove('hidden');
+    }
+
+    function renderEvent() {
+      $('#loading').classList.add('hidden');
+      $('#formContainer').classList.remove('hidden');
+      $('#eventCode').textContent = event.code;
+      $('#eventName').textContent = event.event.name;
+      const metaParts = [];
+      if (event.event.date) metaParts.push(event.event.date);
+      if (event.event.location) metaParts.push(event.event.location);
+      $('#eventMeta').textContent = metaParts.join(' · ');
+
+      // Llenar select de categorías
+      const sel = $('#fCategory');
+      for (const c of event.categories) {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      }
+    }
+
+    // Uploads
+    function setupUpload(kind) {
+      const preview = $(`#${kind}Preview`);
+      const input = $(`#${kind}Input`);
+      const clearBtn = $(`[data-clear="${kind}"]`);
+
+      preview.addEventListener('click', () => input.click());
+      input.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) loadImage(file, kind);
+      });
+
+      preview.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        preview.classList.add('dragover');
+      });
+      preview.addEventListener('dragleave', () => preview.classList.remove('dragover'));
+      preview.addEventListener('drop', (e) => {
+        e.preventDefault();
+        preview.classList.remove('dragover');
+        const file = e.dataTransfer.files?.[0];
+        if (file && file.type.startsWith('image/')) loadImage(file, kind);
+      });
+
+      clearBtn.addEventListener('click', () => {
+        uploads[kind] = null;
+        renderUpload(kind);
+      });
+    }
+
+    async function loadImage(file, kind) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast('La imagen es muy grande (máximo 10 MB)', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const resized = await resizeImage(e.target.result, 800);
+        uploads[kind] = resized;
+        renderUpload(kind);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resizeImage(dataUrl, maxSide) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (Math.max(width, height) > maxSide) {
+            const scale = maxSide / Math.max(width, height);
+            width = Math.round(width * scale);
+            height = Math.round(height * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = dataUrl;
+      });
+    }
+
+    function renderUpload(kind) {
+      const preview = $(`#${kind}Preview`);
+      const clearBtn = $(`[data-clear="${kind}"]`);
+      if (uploads[kind]) {
+        preview.classList.add('has-image');
+        preview.innerHTML = `<img src="${uploads[kind]}" alt="" />`;
+        clearBtn.classList.remove('hidden');
+      } else {
+        preview.classList.remove('has-image');
+        const icon = kind === 'photo' ? '👤' : '🏫';
+        const label = kind === 'photo' ? 'FOTO DEL COMPETIDOR' : 'ESCUDO ESCUELA';
+        preview.innerHTML = `<div class="upload-placeholder">
+          <div class="upload-icon">${icon}</div>
+          <div>${label}</div>
+          <div class="upload-hint">Click o arrastrá</div>
+        </div>`;
+        clearBtn.classList.add('hidden');
+      }
+    }
+
+    setupUpload('photo');
+    setupUpload('logo');
+
+    // Autocompletado de escuelas
+    const schoolInput = $('#fSchool');
+    const suggBox = $('#schoolSugg');
+
+    schoolInput.addEventListener('input', renderSchoolSuggestions);
+    schoolInput.addEventListener('focus', renderSchoolSuggestions);
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.school-block')) {
+        suggBox.classList.remove('show');
+      }
+    });
+
+    function renderSchoolSuggestions() {
+      const q = schoolInput.value.toLowerCase().trim();
+      const matches = schools.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 8);
+      suggBox.innerHTML = '';
+      if (matches.length === 0 || !schools.length) {
+        suggBox.classList.remove('show');
+        return;
+      }
+      for (const s of matches) {
+        const item = document.createElement('div');
+        item.className = 'school-sugg-item';
+        const logoHtml = s.hasLogo
+          ? `<img src="/api/events/${event.code}/schools/${encodeURIComponent(s.name)}/logo" alt="" />`
+          : '🏫';
+        item.innerHTML = `<div class="school-sugg-logo">${logoHtml}</div><div>${s.name}</div>`;
+        item.addEventListener('click', () => {
+          schoolInput.value = s.name;
+          suggBox.classList.remove('show');
+        });
+        suggBox.appendChild(item);
+      }
+      suggBox.classList.add('show');
+    }
+
+    // Submit
+    $('#submitBtn').addEventListener('click', submitForm);
+
+    async function submitForm() {
+      const payload = {
+        name: $('#fName').value.trim(),
+        school: $('#fSchool').value.trim(),
+        category: $('#fCategory').value,
+        birthdate: $('#fBirthdate').value,
+        weight: $('#fWeight').value.trim(),
+        beltLevel: $('#fBelt').value.trim(),
+        phone: $('#fPhone').value.trim(),
+        email: $('#fEmail').value.trim(),
+        photo: uploads.photo,
+        schoolLogo: uploads.logo,
+      };
+      if (!payload.name) return toast('Falta el nombre', 'error');
+      if (!payload.category) return toast('Elegí una categoría', 'error');
+
+      const btn = $('#submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'ENVIANDO...';
+
+      try {
+        const res = await fetch(`/api/events/${event.code}/registrations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Error');
+        }
+        const result = await res.json();
+        $('#formContainer').classList.add('hidden');
+        $('#successScreen').classList.remove('hidden');
+        $('#successRegId').textContent = result.id;
+      } catch (e) {
+        toast(e.message || 'Error enviando', 'error');
+        btn.disabled = false;
+        btn.textContent = '✓ INSCRIBIRME';
+      }
+    }
+
+    $('#anotherBtn').addEventListener('click', () => location.reload());
+
+    // Toast
+    let toastTimer;
+    function toast(msg, kind = '') {
+      const t = $('#toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + kind;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // === WIDGET DEL BOT ===
+    // Cargar dinámicamente el widget pasándole el código del evento de esta página
+    function loadBotWidget() {
+      const s = document.createElement('script');
+      s.src = '/bot-widget.js';
+      s.dataset.code = code;
+      document.body.appendChild(s);
+    }
+    loadBotWidget();
+
+    init();
+  </script>
+</body>
+</html>

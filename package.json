@@ -1,0 +1,11 @@
+{
+  "name": "inscripciones-taekwondo",
+  "version": "1.0.0",
+  "description": "Sitio público de inscripciones a torneos (Vercel + MongoDB Atlas)",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0"
+  }
+}
